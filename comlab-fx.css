@@ -1,0 +1,178 @@
+/* ===== Professional animated background + refined glass (self-contained) ===== */
+html, body { overflow-x: hidden; }
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(1300px 900px at 10% -8%,  #1b2c66 0%, transparent 55%),
+    radial-gradient(1100px 800px at 106% -6%, #0c3a55 0%, transparent 52%),
+    radial-gradient(1250px 1000px at 88% 112%, #241a5e 0%, transparent 55%),
+    linear-gradient(165deg, #080c1b 0%, #0b1226 48%, #090f20 100%);
+  background-attachment: fixed;
+  color: #fff;
+}
+
+/* Background layer stack (all sit behind content) */
+#bg3d, .bg-aura, .bg-vignette, .bg-noise {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+}
+.bg-aura { overflow: hidden; }
+
+/* Drifting aurora — refined, screen-blended color */
+.aura {
+  position: absolute; border-radius: 50%;
+  filter: blur(130px);
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+.aura-1 { width: 620px; height: 620px; background: #2a4cff; opacity: .30; top: -200px; left: -160px; animation: auraA 28s ease-in-out infinite alternate; }
+.aura-2 { width: 560px; height: 560px; background: #00d3a7; opacity: .20; bottom: -240px; right: -150px; animation: auraB 34s ease-in-out infinite alternate; }
+.aura-3 { width: 540px; height: 540px; background: #7b3bff; opacity: .18; top: 42%; left: 60%; animation: auraC 40s ease-in-out infinite alternate; }
+@keyframes auraA { 0%{transform:translate(0,0) scale(1);} 100%{transform:translate(120px,80px) scale(1.15);} }
+@keyframes auraB { 0%{transform:translate(0,0) scale(1);} 100%{transform:translate(-140px,-90px) scale(1.2);} }
+@keyframes auraC { 0%{transform:translate(-50%,-50%) scale(1);} 100%{transform:translate(-38%,-64%) scale(1.22);} }
+
+/* Premium vignette keeps the center content calm + readable */
+.bg-vignette { background: radial-gradient(130% 115% at 50% -5%, transparent 42%, rgba(4,7,16,.55) 100%); }
+
+/* Ultra-subtle film grain for a polished finish */
+.bg-noise {
+  opacity: .045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+
+/* Lift content above the background */
+.app { position: relative; z-index: 1; }
+
+/* ===== Refined glassmorphism ===== */
+.sidebar {
+  background: linear-gradient(180deg, rgba(17,23,44,.82), rgba(12,17,33,.86));
+  backdrop-filter: blur(20px) saturate(1.25);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  border-right: 1px solid rgba(120,150,255,.10);
+}
+.topbar {
+  background: rgba(13,18,36,.55);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  border-bottom: 1px solid rgba(120,150,255,.10);
+}
+.stat-card {
+  background: linear-gradient(160deg, rgba(26,33,60,.62), rgba(18,24,46,.58));
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  border: 1px solid rgba(120,150,255,.12);
+  box-shadow: 0 18px 40px -26px rgba(0,0,0,.65);
+  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+.stat-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(120,150,255,.30);
+  box-shadow: 0 26px 54px -26px rgba(42,76,255,.4);
+}
+.card {
+  position: relative;
+  background: linear-gradient(160deg, rgba(24,31,57,.64), rgba(17,23,44,.60));
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  border: 1px solid rgba(120,150,255,.12);
+  box-shadow: 0 24px 60px -32px rgba(0,0,0,.7);
+}
+.card::before {
+  content:""; position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, var(--brand), var(--accent) 55%, var(--accent-2));
+  opacity:.8; z-index:1;
+}
+.table thead th { background: rgba(30,38,66,.55); }
+.table tbody tr:hover { background: rgba(90,130,255,.10); }
+.search-bar, .icon-btn {
+  background: rgba(24,31,57,.60);
+  border: 1px solid rgba(120,150,255,.10);
+}
+
+/* ===== Floating 3D computer parts (pure CSS, offline-safe) ===== */
+.scene3d {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  overflow: hidden; perspective: 1200px; perspective-origin: 50% 42%;
+}
+.part {
+  position: absolute;
+  width: var(--w, 120px); height: var(--h, 120px);
+  transform-style: preserve-3d;
+  opacity: var(--op, .34);
+  animation: partSpin var(--sp, 32s) linear infinite,
+             partBob  var(--bb, 10s) ease-in-out infinite alternate;
+}
+@keyframes partSpin {
+  from { transform: rotateX(var(--rx, 18deg)) rotateY(0deg); }
+  to   { transform: rotateX(var(--rx, 18deg)) rotateY(360deg); }
+}
+@keyframes partBob { from { margin-top: -22px; } to { margin-top: 22px; } }
+
+.part .face {
+  position: absolute; box-sizing: border-box;
+  border: 1px solid var(--edge, rgba(120,150,255,.55));
+  background: var(--fill, rgba(40,60,140,.16));
+  box-shadow: inset 0 0 18px rgba(120,150,255,.10);
+}
+.fx-front  { width: var(--w); height: var(--h); top: 0; left: 0; transform: translateZ(calc(var(--d)/2)); }
+.fx-back   { width: var(--w); height: var(--h); top: 0; left: 0; transform: rotateY(180deg) translateZ(calc(var(--d)/2)); }
+.fx-right  { width: var(--d); height: var(--h); top: 0; left: calc(var(--w)/2 - var(--d)/2); transform: rotateY(90deg)  translateZ(calc(var(--w)/2)); }
+.fx-left   { width: var(--d); height: var(--h); top: 0; left: calc(var(--w)/2 - var(--d)/2); transform: rotateY(-90deg) translateZ(calc(var(--w)/2)); }
+.fx-top    { width: var(--w); height: var(--d); left: 0; top: calc(var(--h)/2 - var(--d)/2); transform: rotateX(90deg)  translateZ(calc(var(--h)/2)); }
+.fx-bottom { width: var(--w); height: var(--d); left: 0; top: calc(var(--h)/2 - var(--d)/2); transform: rotateX(-90deg) translateZ(calc(var(--h)/2)); }
+
+/* CPU chip — core square + pin rows on the sides */
+.cpu .fx-top {
+  background:
+    linear-gradient(rgba(120,150,255,.10), rgba(120,150,255,.10)),
+    repeating-linear-gradient(0deg, transparent 0 6px, rgba(120,150,255,.08) 6px 7px),
+    repeating-linear-gradient(90deg, transparent 0 6px, rgba(120,150,255,.08) 6px 7px);
+  box-shadow:
+    inset 0 0 0 9px rgba(10,16,40,.40),
+    inset 0 0 0 10px rgba(120,150,255,.55),
+    inset 0 0 20px rgba(120,150,255,.14);
+}
+.cpu .fx-front, .cpu .fx-back, .cpu .fx-left, .cpu .fx-right {
+  background:
+    linear-gradient(rgba(40,60,140,.18), rgba(40,60,140,.18)),
+    repeating-linear-gradient(90deg, transparent 0 5px, rgba(185,205,255,.30) 5px 7px);
+}
+
+/* RAM stick — chip modules + gold contact strip at the bottom */
+.ram .fx-front, .ram .fx-back {
+  background:
+    linear-gradient(to top, rgba(255,201,92,.38) 0 11%, transparent 11%),
+    repeating-linear-gradient(90deg, transparent 0 13px, rgba(120,150,255,.18) 13px 30px),
+    linear-gradient(rgba(30,45,110,.22), rgba(30,45,110,.22));
+}
+
+/* GPU card — cooling fan ring on the face */
+.gpu .fx-front {
+  background:
+    radial-gradient(circle at 70% 50%, rgba(120,150,255,.32) 0 7%, transparent 8% 13%, rgba(120,150,255,.22) 14% 16%, transparent 17%),
+    linear-gradient(rgba(30,45,110,.22), rgba(30,45,110,.22));
+}
+
+/* HDD — spinning platter on the top */
+.hdd .fx-top {
+  background:
+    radial-gradient(circle at 42% 50%, rgba(205,214,240,.28) 0 28%, rgba(120,150,255,.14) 29% 31%, transparent 32%),
+    linear-gradient(rgba(60,72,104,.28), rgba(60,72,104,.28));
+}
+
+/* Monitor — glowing screen */
+.mon .fx-front {
+  background: linear-gradient(135deg, rgba(0,211,167,.22), rgba(42,76,255,.22));
+  box-shadow: inset 0 0 22px rgba(0,211,167,.16);
+}
+
+@media (max-width: 980px) { .part.hide-sm { display: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .aura, .part { animation: none !important; }
+}
+@media print {
+  #bg3d, .bg-aura, .bg-vignette, .bg-noise, .scene3d { display: none !important; }
+}

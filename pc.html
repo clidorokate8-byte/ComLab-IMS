@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- DEMO: gumagana nang walang Node.js / MySQL -->
+<script src="demo-api.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0b1026" />
+<title>ComLab IMS — PC Set</title>
+<link rel="icon" href="logo2.jfif" />
+<!--
+  pc.html — bubukas ito kapag ini-scan ng camera ng cellphone ang QR ng isang PC set.
+  View only at walang login (ipinapakita lang ang detalye ng PC set at huling maintenance).
+-->
+<style>
+  :root {
+    --bg: #0b1026; --panel: #141b3a; --panel-2: #1a2347; --line: rgba(255,255,255,.08);
+    --ink: #eef1ff; --ink-2: #c4cae6; --muted: #8790b5;
+    --brand: #5b7cff; --accent: #00d3a7; --warn: #ffb547; --danger: #ff5577; --info: #4dabff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: radial-gradient(1200px 600px at 10% -10%, rgba(91,124,255,.25), transparent 60%),
+                radial-gradient(900px 500px at 110% 10%, rgba(0,211,167,.12), transparent 60%), var(--bg);
+    color: var(--ink); font-family: "Segoe UI", Roboto, Arial, sans-serif; min-height: 100vh;
+    padding: max(16px, env(safe-area-inset-top)) 16px 32px;
+  }
+  .wrap { max-width: 560px; margin: 0 auto; }
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .brand img { width: 42px; height: 42px; border-radius: 10px; object-fit: cover; }
+  .brand strong { display: block; font-size: 17px; }
+  .brand span { font-size: 12px; color: var(--muted); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin-bottom: 14px; }
+  .pc-no { font-family: ui-monospace, Consolas, monospace; font-size: 26px; font-weight: 700; letter-spacing: .5px; }
+  .lab { color: var(--ink-2); margin-top: 2px; font-size: 15px; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 600; margin-top: 12px; }
+  .badge i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .in-use { background: rgba(77,171,255,.15); color: var(--info); }
+  .in-storage { background: rgba(176,132,255,.16); color: #b084ff; }
+  .maintenance { background: rgba(255,181,71,.15); color: var(--warn); }
+  .defective { background: rgba(255,85,119,.15); color: var(--danger); }
+  .complete { background: rgba(0,211,167,.15); color: var(--accent); }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); margin: 0 0 10px; }
+  .row { display: grid; grid-template-columns: 96px 1fr; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .row:first-of-type { border-top: 0; }
+  .row .k { color: var(--muted); font-size: 13px; }
+  .row .v { font-size: 14px; }
+  .row .s { display: block; font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: var(--muted); margin-top: 2px; word-break: break-all; }
+  .log { padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; }
+  .log:first-of-type { border-top: 0; }
+  .log .top { display: flex; justify-content: space-between; gap: 8px; color: var(--ink-2); font-size: 13px; }
+  .log .badge { margin-top: 0; padding: 2px 9px; font-size: 11px; }
+  .log p { margin: 4px 0 0; color: var(--ink); }
+  .muted { color: var(--muted); }
+  .note { border-radius: 12px; padding: 12px 14px; font-size: 14px; margin-bottom: 14px; }
+  .note.warn { background: rgba(255,181,71,.12); border: 1px solid rgba(255,181,71,.35); color: var(--warn); }
+  .note.err { background: rgba(255,85,119,.12); border: 1px solid rgba(255,85,119,.35); color: #ffb3c2; }
+  .actions { display: flex; flex-direction: column; gap: 10px; }
+  .btn { display: block; text-align: center; text-decoration: none; border-radius: 12px; padding: 13px; font-weight: 600; font-size: 15px; }
+  .btn.primary { background: linear-gradient(135deg, #5b7cff, #8a5bff); color: #fff; }
+  .btn.ghost { border: 1px solid var(--line); color: var(--ink-2); background: var(--panel-2); }
+  .foot { text-align: center; font-size: 12px; color: var(--muted); margin-top: 18px; }
+  .skeleton { height: 120px; border-radius: 16px; background: linear-gradient(90deg, var(--panel), var(--panel-2), var(--panel)); background-size: 200% 100%; animation: sh 1.2s infinite; }
+  @keyframes sh { to { background-position: -200% 0; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <img src="logo2.jfif" alt="School of Computer Studies" />
+    <div><strong>ComLab IMS</strong><span>City College of Tagaytay · School of Computer Studies</span></div>
+  </div>
+  <div id="app"><div class="skeleton"></div></div>
+  <div class="foot" id="foot">Equipment Information</div>
+</div>
+
+<script>
+const PART_LABELS = { monitor: "Monitor", keyboard: "Keyboard", mouse: "Mouse", gpu: "GPU", cpu: "CPU",
+  motherboard: "Motherboard", ram1: "RAM 1", ram2: "RAM 2", psu: "PSU", ssd: "SSD" };
+const TYPE_LABELS = { repair: "Repair", replacement: "Replacement", cleaning: "Cleaning", inspection: "Inspection", upgrade: "Upgrade", other: "Other" };
+const esc = v => String(v == null ? "" : v).replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+const fmtDate = v => { if (!v) return "—"; const d = new Date(v.length === 10 ? v + "T00:00:00" : v); return isNaN(d) ? esc(v) : d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }); };
+const app = document.getElementById("app");
+
+function showError(msg) { app.innerHTML = `<div class="note err">${esc(msg)}</div>`; }
+
+(async function () {
+  const id = new URLSearchParams(location.search).get("id");
+  if (!id) return showError("Invalid QR code: no PC set ID.");
+  let data;
+  try {
+    const r = await fetch("/api/public/pc/" + encodeURIComponent(id));
+    data = await r.json().catch(() => ({}));
+    if (!r.ok) return showError(r.status === 404 ? "PC set not found. It may have been deleted." : (data.error || "Server error."));
+  } catch (e) { return showError("Can't reach the ComLab IMS server. Make sure the phone is on the same Wi-Fi as the lab computer."); }
+
+  const pc = data.item, logs = data.maintenance || [];
+  document.title = `ComLab IMS — ${pc.pcNo}`;
+  const parts = Object.keys(PART_LABELS).filter(p => p !== "ram2" || pc.ramCount === 2);
+  let html = pc.archived ? `<div class="note warn">This PC set is in the Archive (no longer in the active inventory).</div>` : "";
+  html += `<div class="card">
+      <div class="pc-no">${esc(pc.pcNo)}</div>
+      <div class="lab">${esc(pc.lab)}</div>
+      <span class="badge ${esc(pc.status)}"><i></i>${esc(pc.statusLabel)}</span>
+    </div>
+    <div class="card"><h2>Components</h2>${parts.map(p => {
+      const c = pc.components[p] || {};
+      const has = c.brand || c.serial || c.capacity;
+      return `<div class="row"><div class="k">${PART_LABELS[p]}</div><div class="v">${has ? esc(c.brand || "—") + (c.capacity ? ` <span class="muted">(${esc(c.capacity)})</span>` : "") + (c.serial ? `<span class="s">SN: ${esc(c.serial)}</span>` : "") : '<span class="muted">—</span>'}</div></div>`;
+    }).join("")}</div>
+    <div class="card"><h2>Recent Maintenance</h2>${logs.length ? logs.map(l => `<div class="log">
+        <div class="top"><span>${fmtDate(l.date)} · ${esc(l.component)} · ${esc(TYPE_LABELS[l.type] || l.type)}</span>
+        ${l.status ? `<span class="badge ${l.status === "complete" ? "complete" : "maintenance"}">${l.status === "complete" ? "Complete" : "In Progress"}</span>` : ""}</div>
+        <p>${esc(l.description)}</p></div>`).join("") : '<p class="muted" style="margin:0">No maintenance records.</p>'}</div>`;
+  app.innerHTML = html;
+  document.getElementById("foot").textContent = "Equipment Information · Last updated " + fmtDate(pc.updatedAt);
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+<!-- DEMO: gumagana nang walang Node.js / MySQL -->
+<script src="demo-api.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ComLab IMS — Spare Parts & Supplies</title>
+<link rel="icon" href="logo2.jfif" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<!-- Bootstrap 5.3.8 (loads first so ComLab styles override it) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="comlab.css" />
+<link rel="stylesheet" href="comlab-fx.css" />
+<link rel="stylesheet" href="comlab-bootstrap.css" />
+<link rel="stylesheet" href="comlab-v3.css?v=1" />
+
+</head>
+<body>
+<script src="comlab-fx.js"></script>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="mobile-toggle" id="mobileToggle" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/></svg>
+      </button>
+      <div class="page-title">
+        <h1 id="pageTitle">Spare Parts & Supplies</h1>
+        <span class="crumbs" id="pageCrumbs">Home / Spare Parts and Supplies</span>
+      </div>
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+        <input type="text" placeholder="Search name or brand..." id="globalSearch" autocomplete="off" />
+      </div>
+      <div class="user-area">
+        <div class="user-info"><span class="name" id="userName">—</span></div>
+        <div class="avatar" id="userAvatar">U</div>
+        <button class="icon-btn danger" id="logoutBtn" title="Logout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="note-banner" id="deanNote" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01" stroke-linecap="round"/></svg>
+        <div>View only. The Laboratory Coordinator manages the spare parts and supplies.</div>
+      </div>
+
+      <div class="stats-grid cols-3">
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-ico brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 7L12 3 4 7v10l8 4 8-4V7z" stroke-linejoin="round"/><path d="M4 7l8 4 8-4M12 11v10" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+          <div class="stat-value" id="statItems">0</div>
+          <div class="stat-label">Items</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-ico accent"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+          <div class="stat-value" id="statIn">0</div>
+          <div class="stat-label">In Stock</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-ico warn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>
+          <div class="stat-value" id="statLow">0</div>
+          <div class="stat-label">Low / Out of Stock</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2>Spare Parts and Supplies</h2>
+            <span class="head-sub" id="tableSub">—</span>
+          </div>
+          <div class="toolbar">
+            <div class="select-wrap">
+              <select id="filterStock">
+                <option value="">All</option>
+                <option value="in">In Stock</option>
+                <option value="low">Low Stock</option>
+                <option value="out">Out of Stock</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-sm" id="addBtn" style="display:none">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+              Add Item
+            </button>
+          </div>
+        </div>
+        <div class="table-wrap" id="tableWrap"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="spareModal">
+  <div class="modal modal-sm">
+    <div class="modal-head">
+      <div><h2 id="spareTitle">Add Spare Part</h2><span class="modal-sub">Spare parts and supplies</span></div>
+      <button class="modal-close" data-close aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12" stroke-linecap="round"/></svg></button>
+    </div>
+    <form class="modal-body" id="spareForm" novalidate autocomplete="off">
+      <div class="form-grid">
+        <div class="field full">
+          <label for="fName">Name of Equipment <span class="req">*</span></label>
+          <input id="fName" list="nameOptions" placeholder="e.g. Mouse, Keyboard, RAM 8GB" />
+          <datalist id="nameOptions">
+            <option value="Monitor"><option value="Keyboard"><option value="Mouse"><option value="GPU"><option value="CPU">
+            <option value="Motherboard"><option value="RAM"><option value="PSU"><option value="SSD"><option value="LAN Cable"><option value="Thermal Paste">
+          </datalist>
+        </div>
+        <div class="field full">
+          <label for="fBrand">Brand</label>
+          <input id="fBrand" placeholder="e.g. A4Tech" />
+        </div>
+        <div class="field">
+          <label for="fQty">Available Quantity <span class="req">*</span></label>
+          <input id="fQty" type="number" min="0" step="1" value="0" />
+        </div>
+        <div class="field">
+          <label for="fLow">Low Stock When ≤</label>
+          <input id="fLow" type="number" min="0" step="1" value="5" />
+          <span class="hint">Shows "Low Stock" at this quantity</span>
+        </div>
+      </div>
+    </form>
+    <div class="modal-foot">
+      <button type="button" class="btn btn-ghost" data-close>Cancel</button>
+      <button type="button" class="btn btn-primary" id="spareSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toastContainer"></div>
+<script src="comlab-core.js?v=6"></script>
+<script>
+/* =========================================================
+   SPARE PARTS & SUPPLIES — Coordinator: manage, Dean: view only
+   ========================================================= */
+const C = COMLAB;
+let items = [];
+let editing = null;
+let canEdit = false;
+const modal = document.getElementById("spareModal");
+C.wireModal(modal);
+
+function openForm(sp = null) {
+  editing = sp;
+  document.getElementById("spareTitle").textContent = sp ? "Edit Spare Part" : "Add Spare Part";
+  document.getElementById("fName").value = sp ? sp.name : "";
+  document.getElementById("fBrand").value = sp ? sp.brand : "";
+  document.getElementById("fQty").value = sp ? sp.quantity : 0;
+  document.getElementById("fLow").value = sp ? sp.lowStockLevel : 5;
+  C.openModal(modal);
+  setTimeout(() => document.getElementById("fName").focus(), 60);
+}
+
+document.getElementById("spareSave").addEventListener("click", async () => {
+  const data = {
+    name: document.getElementById("fName").value.trim(),
+    brand: document.getElementById("fBrand").value.trim(),
+    quantity: document.getElementById("fQty").value,
+    lowStockLevel: document.getElementById("fLow").value,
+  };
+  if (!data.name) return C.showToast("Please enter the name of the equipment.", "error");
+  if (data.quantity === "" || Number(data.quantity) < 0) return C.showToast("Please enter a valid quantity.", "error");
+  const res = editing ? await C.api.updateSpare(editing.id, data) : await C.api.addSpare(data);
+  if (!C.afterSave(res, editing ? "Spare part updated." : "Spare part added.")) return;
+  C.closeModal(modal);
+  load();
+});
+
+function render() {
+  const q = document.getElementById("globalSearch").value.trim().toLowerCase();
+  const f = document.getElementById("filterStock").value;
+  document.getElementById("statItems").textContent = items.length;
+  document.getElementById("statIn").textContent = items.filter(i => i.stock === "in").length;
+  document.getElementById("statLow").textContent = items.filter(i => i.stock !== "in").length;
+  let list = items;
+  if (f) list = list.filter(i => i.stock === f);
+  if (q) list = list.filter(i => (i.name + " " + i.brand).toLowerCase().includes(q));
+  document.getElementById("tableSub").textContent = `${list.length} item${list.length === 1 ? "" : "s"}`;
+  const wrap = document.getElementById("tableWrap");
+  if (!list.length) {
+    wrap.innerHTML = C.emptyStateHTML(items.length ? "No match" : "No spare parts yet",
+      items.length ? "Nothing matches your search or filter." : (canEdit ? "Add spare parts and supplies to keep track of the stock." : "The Laboratory Coordinator hasn't added spare parts yet."));
+    return;
+  }
+  wrap.innerHTML = `<table class="table"><thead><tr><th>Name of Equipment</th><th>Brand</th><th>Available Qty</th><th>Stock</th><th>Last Updated</th>${canEdit ? "<th>Actions</th>" : ""}</tr></thead><tbody>${
+    list.map(i => `<tr data-id="${C.esc(i.id)}">
+      <td class="cell-strong">${C.esc(i.name)}</td>
+      <td>${C.esc(i.brand) || '<span class="muted">—</span>'}</td>
+      <td class="cell-mono">${i.quantity}</td>
+      <td>${C.stockBadge(i)}</td>
+      <td>${C.fmtDate(i.updatedAt)}</td>
+      ${canEdit ? `<td><div class="actions-cell">
+        <button class="action-btn edit" data-act="edit" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <button class="action-btn del" data-act="del" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div></td>` : ""}
+    </tr>`).join("")}</tbody></table>`;
+  wrap.querySelectorAll("[data-act]").forEach(b => b.addEventListener("click", async () => {
+    const sp = items.find(i => i.id === b.closest("tr").dataset.id);
+    if (!sp) return;
+    if (b.dataset.act === "edit") return openForm(sp);
+    if (!(await C.confirmBox(`Delete <strong>${C.esc(sp.name)}</strong> from Spare Parts?`, { title: "Delete item", okText: "Delete", danger: true }))) return;
+    if (C.afterSave(await C.api.deleteSpare(sp.id), "Spare part deleted.")) load();
+  }));
+}
+
+async function load() {
+  const r = await C.api.spareParts();
+  if (!r.ok) C.showToast(r.error, "error");
+  items = r.ok ? r.items : [];
+  render();
+}
+
+document.getElementById("globalSearch").addEventListener("input", render);
+document.getElementById("filterStock").addEventListener("change", render);
+document.getElementById("addBtn").addEventListener("click", () => openForm());
+
+(async function boot() {
+  if (!(await C.init())) return;
+  canEdit = C.is("coordinator");
+  document.getElementById("addBtn").style.display = canEdit ? "" : "none";
+  document.getElementById("deanNote").style.display = C.is("dean") ? "" : "none";
+  load();
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+</body>
+</html>
